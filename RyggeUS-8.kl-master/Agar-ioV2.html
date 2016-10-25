@@ -1,0 +1,328 @@
+<canvas id="ctx" width="1000" height="600" style="border:1px solid #000000;"></canvas>
+
+<script>
+var ctx = document.getElementById("ctx").getContext("2d");
+ctx.font = '30px Arial';
+
+var Width = 1400;
+var Height = 600;
+
+createEntity = function (x, y, spd, width, height, color){
+  var self = {
+    x:x,
+    y:y,
+    color:color,
+    super:0,
+    spd:spd,
+    width:width,
+    height:height,
+    pu:false,
+    pd:false,
+    pr:false,
+    pl:false,
+  }
+
+  self.updatePos = function () {
+    var oldX = self.x;
+    var oldY = self.y;
+  
+    if(self.pu === true){
+      self.y -= self.spd;
+    }
+
+    if(self.pd === true){
+      self.y += self.spd;
+    }
+
+    if(self.pr === true){
+      self.x += self.spd;
+    }
+
+    if(self.pl === true){
+      self.x -= self.spd;
+    }
+
+    if(self.x + self.width >= Width || self.x <= 0){
+      self.x = oldX;
+    }
+
+    if(self.y + self.height >= Height || self.y <= 0){
+      self.y = oldY;
+    }
+  }
+
+  self.update = function () {
+    self.updatePos();
+  }
+   
+  return self;
+}
+
+var player = createEntity(200, 200, 1, 6, 6, 'green');
+var player2 = createEntity(400, 400, 1, 6, 6, 'purple');
+
+
+
+document.onkeydown = function (event){
+  if(event.keyCode === 87){
+    player.pu = true;
+  }
+
+  else if(event.keyCode === 83){
+    player.pd = true;
+  }
+
+  else if(event.keyCode === 68){
+    player.pr = true;
+  }
+
+  else if(event.keyCode === 65){
+    player.pl = true;
+  }
+
+  
+  //Player 2
+ 
+  else if(event.keyCode === 38){
+    player2.pu = true;
+  }
+
+  else if(event.keyCode === 40){
+    player2.pd = true;
+  }
+
+  else if(event.keyCode === 39){
+    player2.pr = true;
+  }
+
+  else if(event.keyCode === 37){
+    player2.pl = true;
+  }  
+
+}
+
+document.onkeyup = function (event){
+
+  if(event.keyCode === 87){
+    player.pu = false;
+  }
+
+  else if(event.keyCode === 83){
+    player.pd = false;
+  }
+
+  else if(event.keyCode === 68){
+    player.pr = false;
+  }
+
+  else if(event.keyCode === 65){
+    player.pl = false;
+  }
+
+
+
+  //Player 2
+
+  else if(event.keyCode === 38){
+    player2.pu = false;
+  }
+
+  else if(event.keyCode === 40){
+    player2.pd = false;
+  }
+
+  else if(event.keyCode === 39){
+    player2.pr = false;
+  }
+
+  else if(event.keyCode === 37){
+    player2.pl = false;
+  }
+
+}
+
+
+
+
+var massUpgrade = [];
+var superUpgrade = [];
+
+
+function genSuperUpgrade(){
+  var asd = {
+    x:Math.random() * Width,
+    y:Math.random() * Height,
+    width:10,
+    height:10,
+    color:'red',
+  }
+  superUpgrade[superUpgrade.length + 1] = asd;
+}
+
+
+
+function genMassUpgrade() {
+  var asd = {
+    x:Math.random() * Width,
+    y:Math.random() * Height,
+    width:40,
+    height:40,
+    color:'blue',
+  }
+  massUpgrade[massUpgrade.length + 1] = asd;
+
+}
+
+
+function drawEntity(thing){
+  ctx.save();
+  ctx.fillStyle = thing.color;
+  ctx.fillRect(thing.x, thing.y, thing.width, thing.height);
+  ctx.restore();
+
+}
+
+function drawPlayer(thing){
+  ctx.save();
+  ctx.fillStyle = thing.color;
+  ctx.fillRect(thing.x, thing.y, thing.width, thing.height);
+  ctx.restore();
+}
+
+
+
+var count = 0;
+
+
+isColliding = function (entity1, entity2){
+  if (entity1.x < entity2.x + entity2.width &&
+   entity1.x + entity1.width > entity2.x &&
+   entity1.y < entity2.y + entity2.height &&
+   entity1.height + entity1.y > entity2.y) {
+    return true;
+  }
+  
+  return false;
+}
+
+
+
+
+
+function update() {
+
+  player.update();
+  player2.update();
+  	
+  ctx.clearRect(0,0,Width,Height);
+  drawPlayer(player);
+  drawPlayer(player2);
+  
+  count++;
+
+  if(count % 100 === 0){
+    genMassUpgrade();
+  }
+
+  if(count % 10000 === 0){
+    genSuperUpgrade();
+  }
+  
+  player.super -= 1;
+  player2.super -= 1;
+
+  if(isColliding(player, player2)){
+
+    if(player.width < player2.width && player.super > 0){
+      var addARemove = player2.width - 6;
+      player.width += addARemove;
+      player.height += addARemove;
+      
+      player2.width -= addARemove;
+      player2.height -= addARemove;
+    }
+
+    if(player2.width < player.width && player2.super > 0){
+      var addARemove = player.width - 6;
+      player2.width += addARemove;
+      player2.height += addARemove;
+      
+      player.width -= addARemove;
+      player.height -= addARemove;
+    }
+
+
+
+
+
+
+    
+    if(player2.width > player.width){
+      var addARemove = player.width - 6;
+      player2.width += addARemove;
+      player2.height += addARemove;
+      
+      player.width -= addARemove;
+      player.height -= addARemove;
+    }
+
+
+    if(player.width > player2.width){
+      var addARemove = player2.width - 6;
+      player.width += addARemove;
+      player.height += addARemove;
+      
+      player2.width -= addARemove;
+      player2.height -= addARemove;
+    }
+  }
+  
+
+  for(var key in massUpgrade){
+    drawEntity(massUpgrade[key]);
+    if(isColliding(player, massUpgrade[key])){
+      console.log()
+      delete(massUpgrade[key]);
+      var amountDot = 2;
+      player.width += amountDot;
+      player.height += amountDot;
+      
+    }
+
+    else if(isColliding(player2, massUpgrade[key])){
+      console.log()
+      delete(massUpgrade[key]);
+      var amountDot = 2;
+      player2.width += amountDot;
+      player2.height += amountDot;
+      
+    }
+  }
+
+
+
+
+
+  for(var key in superUpgrade){
+    drawEntity(superUpgrade[key]);
+    
+
+    if(isColliding(player, superUpgrade[key])){
+      delete(superUpgrade[key]); 
+      player.super = 4 * 1000;
+    }
+
+    else if(isColliding(player2, superUpgrade[key])){
+      delete(superUpgrade[key]); 
+      player2.super = 4 * 1000;
+    }
+    
+  }
+}
+
+
+
+setInterval(update,1000/1000)
+
+
+</script>
